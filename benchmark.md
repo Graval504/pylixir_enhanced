@@ -1,7 +1,7 @@
 
 Name | Algorithm Group | sum14↑ (%) | sum16 | sum18 | Registered | Note | insight
 -- | -- | -- | -- | -- | -- | -- | --
-transformer-L6-H4-Emb128-cosinelrdecay3e-4-SwiGLU | DQN | 49.4 | 16.56| 2.92 | December 9, 2024 02:28 AM(KST) | SOTA, 20000k epoch (total 4h on R5 5600, RTX 3090), but don't need that many epoch
+transformer-L6-H4-Emb128-cosinelrdecay3e-4-SwiGLU | DQN | 49.4 | 16.56 | 2.92 | December 9, 2024 02:28 AM(KST) | SOTA, 20000k epoch (total 4h on R5 5600, RTX 3090), but don't need that many epoch
 Elphago | ML | 18.6 | 7.78 | 2.69 | August 26, 2023 12:12 AM | Previous SOTA |  
 transformer-L3-H4-Emb128-lrdecay3e-4-lock-long-ffnx4 | DQN | 34.37 | 12.07 | 2.65 | August 1, 2023 2:31 PM | 3 layer, 6000k epoch (total 34h) |  
 transformer-L3-H4-Emb128-lrdecay3e-4-lock | DQN | 33.28 | 11.71 | 2.52 | July 25, 2023 11:54 PM | 3-Layer transformer encoder, 4 Head, step 2000k, LR decat(exponential to 3e-5, warm-up 200k), LOCK embedding 추가 | apply lock embedding
