@@ -19,6 +19,7 @@ from tqdm import trange
 
 from deep.stable_baselines.util import ModelSettings, TrainSettings
 from pylixir.envs import register_env
+from torchsummary import summary
 
 ENV_NAME = "DictPylixirEnv"
 
@@ -148,7 +149,7 @@ def train(
         train_envs["eval_freq"] // n_envs,
         f"./logs/checkpoints/{train_envs['name']}.{train_envs['expname']}",
     )
-    model_dirname = f"logs/checkpoints/{train_envs['name']}.{train_envs['expname']}"
+    model_dirname = f"logs/checkpoints/{train_envs['name']}.{train_envs['expname']}.{time.strftime('%Y%m%d', time.localtime())}"
     try:
         Path(model_dirname).mkdir(parents=True, exist_ok=False)
     except Exception as e:
@@ -159,7 +160,7 @@ def train(
         json.dump(
             _serialize_config({"train": train_envs, "model": model_envs}), f, indent=2
         )
-
+    
     print(model.policy)
     random.seed(model_envs["seed"])
     evaluate(model, env, max_seed=train_envs["evaluation_n"], render=False)

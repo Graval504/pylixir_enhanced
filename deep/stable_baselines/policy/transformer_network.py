@@ -12,6 +12,22 @@ from stable_baselines3.common.type_aliases import Schedule
 from torch import nn
 
 
+class SwiGLU(nn.Module):
+    def __init__(self, input_dim, hidden_dim, out_dim):
+        super().__init__()
+        self.fc1 = nn.Linear(input_dim, hidden_dim)
+        self.fc2 = nn.Linear(input_dim, hidden_dim)
+        self.silu = nn.SiLU()
+        self.out = nn.Linear(hidden_dim, out_dim)
+
+    def forward(self, x):
+        # First branch with SiLU activation
+        gate = self.silu(self.fc1(x))
+        # Second branch without activation
+        linear = self.fc2(x)
+        # Element-wise product
+        return self.out(gate * linear)
+    
 class PositionalEncoding(nn.Module):
     def __init__(self, dim_model, dropout_p, max_len):
         super().__init__()
@@ -60,49 +76,19 @@ class TransformerDecisionNet(nn.Module):
                     self._transformer_heads,
                     dim_feedforward=vector_size * 4,
                     batch_first=True,
+                    activation=nn.SiLU()
                 )
                 for _ in range(self._transformer_layers)
             ]
         )
-
-        self.nn = nn.Sequential(
-            nn.Linear(vector_size * (1 + 1 + 2), hidden_dimension),
-            nn.ReLU(),
-            nn.Linear(hidden_dimension, 1),
-        )
-        self.reroll = nn.Sequential(
-            nn.Linear(vector_size * 10, hidden_dimension),
-            nn.ReLU(),
-            nn.Linear(hidden_dimension, 1),
-        )
+        self.SwiGLU = SwiGLU(vector_size*10, hidden_dimension, 16)
 
     def forward(self, x):
         x = self.pe(x)
 
         for attn in self.mha:
             x = attn(x)
-
-        boards = x[:, :5, :]  # [B, 5, N]
-        councils = x[:, 5:8, :]  # [B, 3, N]
-        ctxs = x[:, 8:, :]  # [B, 2, N]
-
-        ctxs = th.flatten(ctxs, 1)
-        ctxs = th.stack([ctxs, ctxs, ctxs], dim=1)
-        ctxs = th.stack([ctxs, ctxs, ctxs, ctxs, ctxs], dim=1)
-
-        boards = th.stack([boards, boards, boards], dim=2)
-        councils = th.stack([councils, councils, councils, councils, councils], dim=1)
-
-        action_space_vector = th.cat([boards, councils], dim=-1)
-        action_space_vector = th.cat([action_space_vector, ctxs], dim=-1)
-        output = self.nn(action_space_vector)
-
-        output = th.flatten(th.squeeze(output, dim=1), start_dim=1)
-
-        # Reroll defining network
-        reroll = self.reroll(th.flatten(x, start_dim=1))
-        action = th.cat([output, reroll], dim=1)
-
+        action = self.SwiGLU(th.flatten(x, start_dim=1))
         return action
 
 
@@ -191,7 +177,7 @@ class TransformerQPolicy(BasePolicy):
         features_extractor_class: Type[BaseFeaturesExtractor] = FlattenExtractor,
         features_extractor_kwargs: Optional[Dict[str, Any]] = None,
         normalize_images: bool = True,
-        optimizer_class: Type[th.optim.Optimizer] = th.optim.Adam,
+        optimizer_class: Type[th.optim.Optimizer] = th.optim.AdamW,
         optimizer_kwargs: Optional[Dict[str, Any]] = None,
         vector_size: int = 128,
         hidden_dimension: int = 64,

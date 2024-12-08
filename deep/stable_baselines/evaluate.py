@@ -9,7 +9,7 @@ model_zip_path = sys.argv[
     1
 ]  # ex.  "./logs/checkpoints/DQN.exp-neg-decay-b128-emb/rl_model_1500000_steps.zip"
 
-model = DQN.load(model_zip_path)
+model = DQN.load(model_zip_path, device='cuda')
 
 env = DictPylixirEnv()
 av_ep_lens, avg_rewards, success_rate, r_14, r_16, r_18 = evaluate_model(

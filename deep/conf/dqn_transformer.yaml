@@ -2,29 +2,29 @@ architecture: DQN
 
 train:
   name: DQN
-  expname: transformer-L3-H4-Emb128-lrdecay3e-4-example
-  total_timesteps: 2000000
+  expname: transformer-L6-H4-Emb128-cosinelrdecay3e-4-SwiGLU
+  total_timesteps: 20000000
   log_interval: 1000
   checkpoint_freq: 100000
-  eval_freq: 100000
+  eval_freq: 20000000
   evaluation_n: 250
-  n_envs: 4
+  n_envs: 96
 
 model:
   policy: TransformerQPolicy
   learning_rate: 
     start: 0.0003
-    end: 0.00003
+    end: 0.0000001
   seed: 37
   kwargs:
-    batch_size: 128
+    batch_size: 512
     tau: 0.5
     gamma: 0.99
     train_freq: 4
     tensorboard_log: ./logs/tb/
     verbose: 1
     policy_kwargs:
-      transformer_layers: 3
+      transformer_layers: 6
       vector_size: 128
       hidden_dimension: 128
       transformer_heads: 4

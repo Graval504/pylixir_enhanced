@@ -101,6 +101,7 @@ class EmbeddingProvider:
         values = state.board.get_effect_values()
         alived_indices = state.board.unlocked_indices()
 
+        values = sorted(values, reverse=True)
         first, second = values[0], values[1]
         if 0 not in alived_indices:
             first = 0
@@ -110,12 +111,14 @@ class EmbeddingProvider:
         return float(2**first + 2**second)
 
     def current_valuation(
-        self, client: Client, index: tuple[int, int] = (0, 1)
+        self, client: Client, index: tuple[int, int] = (-1, -1)
     ) -> float:
         state = client.get_state()
         values = state.board.get_effect_values()
         alived_indices = state.board.unlocked_indices()
-
+        if index == (-1,-1):
+            index = (0,1)
+            values = sorted(values, reverse=True)
         i, j = index
         first, second = values[i], values[j]
 
@@ -217,7 +220,7 @@ class DictObservation:
         state = client.get_state()
         values = state.board.get_effect_values()
         alived_indices = state.board.unlocked_indices()
-
+        values = sorted(values, reverse=True)
         first, second = values[0], values[1]
         if 0 not in alived_indices:
             first = 0
@@ -227,12 +230,14 @@ class DictObservation:
         return first + second
 
     def current_valuation(
-        self, client: Client, index: tuple[int, int] = (0, 1)
+        self, client: Client, index: tuple[int, int] = (-1, -1)
     ) -> float:
         state = client.get_state()
         values = state.board.get_effect_values()
         alived_indices = state.board.unlocked_indices()
-
+        if index == (-1,-1):
+            index = (0,1)
+            values = sorted(values, reverse=True)
         i, j = index
         first, second = values[i], values[j]
 

@@ -1,5 +1,5 @@
 from typing import TypedDict
-
+import numpy as np
 
 class TrainSettings(TypedDict):
     name: str
@@ -41,13 +41,31 @@ class LearningRateDecay:
     def __repr__(self):
         return f"LearningRateDecay:<{self.start}>-><{self.end}>"
 
-    def __call__(self, progress: float) -> float:
+    def __call__(self, progress_remainig: float) -> float:
+        '''
+        progress_remaning starts 1 to 0
+        '''
+        
+        progress = 1-progress_remainig
         rate = self.end / self.start
-        progress = 1 - progress
 
-        if progress < 0.2:
-            return self.start * (5 * progress)
+        # if progress < 0.2:
+        #     return self.start * (5 * progress)
 
-        progress = (progress - 0.2) * 1.25
-
+        # progress = (progress - 0.2) * 1.25
         return self.start * (rate**progress)
+
+class CosineAnnealingDecay:
+    def __init__(self, start:float, eta_min:float = 0.0, T_max:float = 1.0):
+        self.start = start
+        self.T_max = T_max
+        self.eta_min = eta_min
+
+    def __repr__(self):
+        return f"CosineAnnealingLRDecay:<{self.start}>-><{self.eta_min}>"
+
+    def __call__(self, progress_remainig: float) -> float:
+        '''
+        progress_remaning starts 1 to 0
+        '''
+        return self.eta_min + (self.start - self.eta_min) * (1+np.cos((1-progress_remainig)*np.pi)) / 2

@@ -7,7 +7,7 @@ from stable_baselines3 import DQN, PPO
 from deep.stable_baselines._train import train
 from deep.stable_baselines.policy.council_feature import CustomCombinedExtractor
 from deep.stable_baselines.policy.transformer_network import TransformerQPolicy
-from deep.stable_baselines.util import LearningRateDecay, ModelSettings
+from deep.stable_baselines.util import LearningRateDecay, ModelSettings, CosineAnnealingDecay
 
 _POLICY = {
     "TransformerQPolicy": TransformerQPolicy,
@@ -32,7 +32,10 @@ def as_model_envs(raw_model_env: dict) -> ModelSettings:
 
     # Inject scheduled learning rate
     if isinstance(raw_config["learning_rate"], dict):
-        raw_config["learning_rate"] = LearningRateDecay(
+        # raw_config["learning_rate"] = LearningRateDecay(
+        #     raw_config["learning_rate"]["start"], raw_config["learning_rate"]["end"]
+        # )
+        raw_config["learning_rate"] = CosineAnnealingDecay(
             raw_config["learning_rate"]["start"], raw_config["learning_rate"]["end"]
         )
 

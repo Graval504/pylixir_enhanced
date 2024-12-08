@@ -1,8 +1,6 @@
-Pylixir: python Lost Ark Elixir simulator
+Pylixir-Enhanced
 ============
-
-
-pylixir는 python environment 내에서 Elixir 게임을 시뮬레이션합니다.
+2024년 2학기 강화학습 프로젝트로, 기존 Pylixir 모델을 개선하여 성능을 높이는 것을 목표로 하는 프로젝트입니다.
 
 Install
 =========
@@ -14,77 +12,37 @@ Install
 git clone https://github.com/oleneyl/pylixir
 poetry install
 ```
+해당 포크는 효율적인 학습을 위해 cuda 11.8 기반의 pytorch를 설치합니다.\
+따라서 Non-Nvidia GPU 또는 Geforce 700 시리즈 이하의 제품군은 제대로 작동하지 않을 가능성이 있으므로\
+이 경우 원본 repo의 pyproject.toml을 참고하실 것을 부탁드립니다.
 
-Run in terminal
-==========
-```bash
-poetry run python cli.py
-```
-
-Usage
-=======
-
-```python
-from pylixir.interface.cli import ClientBuilder
-
-client_builder = ClientBuilder()
-client = client_builder.get_client(seed)
-
-print(client.view())
-client.pick(sage_index=0, effect_index=3)
-
-print(client.view())
-```
-
-CLI
-=====
-본 프로젝트는 command line interface를 통해 간편하게 동작시킬 수 있습니다.
-실행 이후 [대상 현자 인덱스] [대상 옵션 인덱스] 를 0부터 시작하는 인덱스로 입력합니다.
-선택이 불가능한 현자는 옵션 인덱스로 0을 입력합니다.
-
-ex. 2번째 현자를 5번째 옵션을 선택하려고 할 경우: 1 4 입력
-ex. 3번째 현자를 선택하려고 할 경우: 2 0 입력
-
-
-```sh
-poetry run python cli.py
-
->>>
-0: [0]   20.00% | [10%]
-1: [0]   20.00% | [10%]
-2: [0]   20.00% | [10%]
-3: [0]   20.00% | [10%]
-4: [0]   20.00% | [10%]
-Turn left: 13 | reroll left: 2
-
-[______] | 이번 연성에서 <{3}> 효과가 연성될 확률을 <35>% 올려주지.
-[______] | 이번에 연성되는 효과는 <3>단계 올라갈 걸세. 대신, 기회를 <2>회 소모하겠네.
-[______] | 이번에는 <{3}> 효과를 연성해드리죠.
-    
->>> 0 2
-
-0: [0] _,_,1,_,_,2,_,3,4,5  20.00% | [10%]
-1: [0] _,_,1,_,_,2,_,3,4,5  20.00% | [10%]
-2: [0] _,_,1,_,_,2,_,3,4,5  20.00% | [10%]
-3: [1] X]_,1,_,_,2,_,3,4,5  20.00% | [10%]
-4: [0] _,_,1,_,_,2,_,3,4,5  20.00% | [10%]
-Turn left: 12 | reroll left: 2
-
-[O__]    | 남은 모든 연성에서 <네가 고르는> 효과가 연성될 확률을 <5>% 올려주지.
-[X_____] | 남은 모든 연성에서 <모든> 효과의 대성공 확률을 <5>% 올리겠네.
-[X_____] | 이번 연성에서 <{4}> 효과가 연성될 확률을 <35>% 올려드리죠.
-```
 
 Deep Learning
 ==============
 
-pylixir의 deep 디렉토리에는 pylixir 게임을 Deep RL로 풀이한 모델이 구현되어 있습니다.
-본 프로젝트에서는 5개 선택지중 1, 2번째 옵션의 강화를 최대화 하는 알고리즘을 학습했습니다.
-최적의 알고리즘은 Transformer architecture에 기반한 DQN 알고리즘으로, 53이상 달성 확률 2.65%를 달성했습니다.
-
-- Model Size는 14M으로, serverless하게 배포 가능한 규모입니다.
+현재 개선된 모델의 성능은 합14이상 49.4%, 합16이상 16.56%, 합18이상 2.92%으로, 기존 Pylixir 및 엘파고 모델보다 더 좋은 성능을 가지고 있습니다.
+- Model Size는 약 24.6Mb입니다.
 
 [Benchmark](benchmark.md)
+
+Improvement
+============
+모델 및 코드 개선 사항입니다.
+- Transformer Layer를 6으로 증가
+- Transformer Layer의 활성화함수를 Swish(SiLU)로 변경
+- output Layer를 Linear-ReLU-Linear 형태에서 [SwiGLU FFN](https://arxiv.org/pdf/2002.05202)기반으로 변경
+- loss를 smooth-l1 loss에서 huber loss($\delta=2.5$)로 변경
+- 1, 2번째 옵션이 아닌 아무 옵션이나 제일 높이도록 loss 계산을 변경
+- Cosine annealing LR Scheduler 구현 및 사용
+- 학습에 GPU를 사용하도록 변경
+
+TODO
+===========
+추후 예정 혹은 기획중인 모델 및 코드 개선 사항입니다.
+- Transformer Layer 수 증가
+- 옵션 저격용 모델 학습
+- GNN(Graph Neural Network) 기반 모델 학습
+- evaluation 병렬화
 
 Train with best configuration
 ===========
